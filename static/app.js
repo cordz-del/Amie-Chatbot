@@ -91,6 +91,11 @@ async function sendMessage(message) {
                 <p><strong>You:</strong> ${message}</p>
                 <p><strong>Chatbot:</strong> ${data.response}</p>`;
             chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to the latest message
+
+            // If audio is included in the response (for Coqui TTS)
+            if (data.audio) {
+                playAudio(data.audio);
+            }
         } else if (data.error) {
             chatResponse.textContent = `Error: ${data.error}`;
         } else {
@@ -102,7 +107,7 @@ async function sendMessage(message) {
     }
 }
 
-// Function to speak chatbot responses
+// Function to speak chatbot responses using browser's SpeechSynthesis
 function speakText(text) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
@@ -110,4 +115,14 @@ function speakText(text) {
         console.error("Error occurred during speech synthesis.");
     };
     synth.speak(utterance);
+}
+
+// Function to play audio if provided as a base64 array
+function playAudio(audioData) {
+    const audioBlob = new Blob([new Uint8Array(audioData)], { type: 'audio/wav' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play().catch((error) => {
+        console.error("Error playing audio:", error);
+    });
 }

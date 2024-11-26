@@ -1,5 +1,6 @@
 /* styles.css */
 
+/* General body styling */
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -7,6 +8,7 @@ body {
     color: #333; /* Darker text for readability */
 }
 
+/* Chat history box */
 #chat-history {
     border: 1px solid #ccc;
     padding: 10px;
@@ -14,6 +16,7 @@ body {
     overflow-y: scroll;
     margin-bottom: 10px;
     background-color: #fff; /* Ensure white for readability */
+    border-radius: 4px; /* Slight rounding for a modern look */
 }
 
 /* Optional: Style the scrollbar for Webkit browsers */
@@ -30,6 +33,7 @@ body {
     background-color: #888; /* Darker gray on hover */
 }
 
+/* Chat form styling */
 #chat-form {
     display: flex;
 }
@@ -40,8 +44,19 @@ body {
     font-size: 16px;
     border: 1px solid #ccc; /* Adds border for consistency */
     border-radius: 4px; /* Adds slight rounding */
+    transition: border-color 0.3s ease; /* Smooth focus transition */
 }
 
+#chat-input:focus {
+    border-color: #007BFF; /* Blue border on focus */
+    outline: none; /* Removes default focus outline */
+}
+
+#chat-input::placeholder {
+    color: #888; /* Light gray placeholder text */
+}
+
+/* Submit button styling */
 #chat-form button {
     padding: 10px;
     font-size: 16px;
@@ -50,13 +65,18 @@ body {
     border: none;
     cursor: pointer; /* Pointer cursor for interactivity */
     border-radius: 4px; /* Slight rounding for modern look */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
 #chat-form button:hover {
     background-color: #0056b3; /* Darker blue on hover */
 }
 
-/* Responsive adjustments */
+#chat-form button:focus {
+    outline: 2px solid #007BFF; /* Adds a blue focus outline */
+}
+
+/* Responsive adjustments for smaller screens */
 @media (max-width: 600px) {
     #chat-form {
         flex-direction: column;
@@ -68,5 +88,18 @@ body {
 
     #chat-form button {
         width: 100%; /* Button spans full width */
+    }
+}
+
+/* Additional responsive tweaks for very small devices */
+@media (max-width: 400px) {
+    #chat-input {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    #chat-form button {
+        font-size: 14px;
+        padding: 8px;
     }
 }

@@ -4,36 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice-Enabled Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #chat-history {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 10px;
-            background-color: #f9f9f9;
-        }
-        #chat-form {
-            display: flex;
-        }
-        #chat-input {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-        }
-        #chat-form button {
-            padding: 10px;
-            font-size: 16px;
-        }
-        #status {
-            font-style: italic;
-            color: #555;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Link to external stylesheet -->
 </head>
 <body>
     <h1>Chat with the Bot</h1>
@@ -44,7 +15,7 @@
     <div id="chat-response"></div>
 
     <form id="chat-form">
-        <input type="text" id="chat-input" placeholder="Enter your message">
+        <input type="text" id="chat-input" placeholder="Enter your message" autocomplete="off">
         <button type="submit">Send</button>
     </form>
 
