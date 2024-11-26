@@ -13,6 +13,8 @@ pyttsx3 = "^2.98"
 speechrecognition = "^3.11.0"
 openai = "0.28.0"
 waitress = "^3.0.2"
+django-tts = "^0.3.1"
+soundfile = "^0.12.1"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

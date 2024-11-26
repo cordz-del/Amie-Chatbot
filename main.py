@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from function import generate_response  # Import the function from function.py
 import logging
-import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -10,6 +9,16 @@ CORS(app)  # Enable CORS for all routes
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
+
+# Global flag to simulate `before_first_request`
+first_request = True
+
+@app.before_request
+def initialize_on_first_request():
+    global first_request
+    if first_request:
+        logging.info("Initializing application on first request.")
+        first_request = False
 
 # Root route for status check
 @app.route('/')
@@ -51,13 +60,6 @@ def chat():
 @app.route('/test', methods=['GET'])
 def test_route():
     return "This is a test route!"
-
-# Ensure the necessary environment variables are set
-@app.before_first_request
-def check_environment():
-    if not os.getenv("OPENAI_API_KEY"):
-        logging.error("OPENAI_API_KEY environment variable is not set!")
-        raise EnvironmentError("Please set the OPENAI_API_KEY environment variable.")
 
 # Main entry point for Flask
 if __name__ == '__main__':
