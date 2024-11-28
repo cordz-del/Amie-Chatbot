@@ -1,0 +1,8 @@
+{
+    "response": "Hello! I'm here to help you-- how are you today?",
+    "audio": "encoded_audio_data_here",
+    "conversation_log": [
+        {"user": "Hello, how are you?", "assistant": "Hello! I'm here to help you-- how are you today?"}
+    ],
+    "should_end": false
+}

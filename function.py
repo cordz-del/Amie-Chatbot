@@ -28,6 +28,24 @@ GENERAL_PROMPTS = [
 
 ALL_PROMPTS = EMPATHY_PROMPTS + CONFLICT_RESOLUTION_PROMPTS + GENERAL_PROMPTS
 
+# Quit keywords
+QUIT_KEYWORDS = ["quit", "goodbye", "exit", "bye"]
+
+def is_quit_command(user_input: str) -> bool:
+    """
+    Check if the user input contains a quit command.
+
+    Args:
+        user_input (str): The user's input message.
+
+    Returns:
+        bool: True if quit command is found, False otherwise.
+    """
+    for quit_word in QUIT_KEYWORDS:
+        if quit_word in user_input.lower():
+            return True
+    return False
+
 # Function to dynamically select a prompt
 def select_prompt(conversation_log: List[Dict[str, str]]) -> str:
     """
@@ -56,7 +74,7 @@ def generate_response(user_input: str, conversation_log: List[Dict[str, str]]) -
         tuple[str, bool]: The generated chatbot response and a flag indicating if the conversation should end.
     """
     # Check for quit commands
-    if "quit" in user_input.lower() or "goodbye" in user_input.lower():
+    if is_quit_command(user_input):
         return "Goodbye! It was nice talking to you!", True
 
     # Select an appropriate prompt based on conversation context
@@ -65,9 +83,10 @@ def generate_response(user_input: str, conversation_log: List[Dict[str, str]]) -
     try:
         # Use OpenAI's ChatCompletion to generate a response
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Ensure the model is up-to-date
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful and empathetic assistant."},
+                *conversation_log,
                 {"role": "user", "content": user_input},
                 {"role": "assistant", "content": prompt}
             ],

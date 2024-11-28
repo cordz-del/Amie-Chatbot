@@ -73,7 +73,7 @@ chatForm.addEventListener('submit', async (event) => {
 // Function to send a message to the chatbot API
 async function sendMessage(message) {
     try {
-        const response = await fetch('/chat', {
+        const response = await fetch('https://your-replit-backend-url/chat', { // Update with your actual Replit backend URL
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -84,7 +84,6 @@ async function sendMessage(message) {
         const data = await response.json();
         if (data && data.response) {
             chatResponse.textContent = `Chatbot: ${data.response}`;
-            speakText(data.response);
 
             // Add messages to chat history
             chatHistory.innerHTML += `
@@ -92,7 +91,7 @@ async function sendMessage(message) {
                 <p><strong>Chatbot:</strong> ${data.response}</p>`;
             chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to the latest message
 
-            // If audio is included in the response (for Coqui TTS)
+            // Play the audio if included in the response
             if (data.audio) {
                 playAudio(data.audio);
             }
@@ -107,6 +106,17 @@ async function sendMessage(message) {
     }
 }
 
+// Function to play audio from base64-encoded data
+function playAudio(base64Audio) {
+    const audioData = Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0));
+    const audioBlob = new Blob([audioData], { type: 'audio/wav' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play().catch((error) => {
+        console.error("Error playing audio:", error);
+    });
+}
+
 // Function to speak chatbot responses using browser's SpeechSynthesis
 function speakText(text) {
     const synth = window.speechSynthesis;
@@ -115,14 +125,4 @@ function speakText(text) {
         console.error("Error occurred during speech synthesis.");
     };
     synth.speak(utterance);
-}
-
-// Function to play audio if provided as a base64 array
-function playAudio(audioData) {
-    const audioBlob = new Blob([new Uint8Array(audioData)], { type: 'audio/wav' });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.play().catch((error) => {
-        console.error("Error playing audio:", error);
-    });
 }

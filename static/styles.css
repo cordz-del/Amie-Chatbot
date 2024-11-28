@@ -1,105 +1,121 @@
-/* styles.css */
-
 /* General body styling */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f9f9f9; /* Light gray background */
-    color: #333; /* Darker text for readability */
-}
-
-/* Chat history box */
-#chat-history {
-    border: 1px solid #ccc;
-    padding: 10px;
-    height: 300px;
-    overflow-y: scroll;
-    margin-bottom: 10px;
-    background-color: #fff; /* Ensure white for readability */
-    border-radius: 4px; /* Slight rounding for a modern look */
-}
-
-/* Optional: Style the scrollbar for Webkit browsers */
-#chat-history::-webkit-scrollbar {
-    width: 8px;
-}
-
-#chat-history::-webkit-scrollbar-thumb {
-    background-color: #aaa; /* Gray scrollbar */
-    border-radius: 4px;
-}
-
-#chat-history::-webkit-scrollbar-thumb:hover {
-    background-color: #888; /* Darker gray on hover */
-}
-
-/* Chat form styling */
-#chat-form {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f4f8; /* Light gray/blue background for a clean look */
+    color: #333; /* Neutral dark text for readability */
 }
 
+/* Main chatbot container */
+#chat-container {
+    background-color: white;
+    width: 60%;
+    max-width: 800px;
+    min-width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chat header styling */
+#chat-header {
+    background-color: #007BFF; /* Bright blue for a professional look */
+    color: white;
+    text-align: center;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Chat history section */
+#chat-history {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background-color: #f9f9f9; /* Light background for message area */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Add space between chat messages */
+}
+
+/* Style individual chat messages */
+.chat-message {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 70%;
+}
+
+/* User message styling */
+.chat-message.user {
+    align-self: flex-end;
+    background-color: #007BFF; /* User messages in blue */
+    color: white;
+}
+
+/* Bot message styling */
+.chat-message.bot {
+    align-self: flex-start;
+    background-color: #e9ecef; /* Bot messages in light gray */
+    color: #333;
+}
+
+/* Chat input section */
+#chat-input-container {
+    display: flex;
+    border-top: 1px solid #ddd;
+    padding: 12px;
+    background-color: #fff;
+}
+
+/* Text input field */
 #chat-input {
     flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ccc; /* Adds border for consistency */
-    border-radius: 4px; /* Adds slight rounding */
-    transition: border-color 0.3s ease; /* Smooth focus transition */
+    outline: none;
+    margin-right: 8px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-#chat-input:focus {
-    border-color: #007BFF; /* Blue border on focus */
-    outline: none; /* Removes default focus outline */
-}
-
-#chat-input::placeholder {
-    color: #888; /* Light gray placeholder text */
-}
-
-/* Submit button styling */
-#chat-form button {
-    padding: 10px;
-    font-size: 16px;
-    background-color: #007BFF; /* Blue background */
-    color: white; /* White text */
+/* Send button */
+#send-button {
+    background-color: #007BFF;
+    color: white;
     border: none;
-    cursor: pointer; /* Pointer cursor for interactivity */
-    border-radius: 4px; /* Slight rounding for modern look */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-#chat-form button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+#send-button:hover {
+    background-color: #0056b3; /* Darker blue for hover effect */
 }
 
-#chat-form button:focus {
-    outline: 2px solid #007BFF; /* Adds a blue focus outline */
-}
-
-/* Responsive adjustments for smaller screens */
+/* Responsive adjustments */
 @media (max-width: 600px) {
-    #chat-form {
-        flex-direction: column;
+    #chat-container {
+        width: 90%;
     }
 
-    #chat-input {
-        margin-bottom: 10px;
+    #chat-header {
+        font-size: 16px;
     }
 
-    #chat-form button {
-        width: 100%; /* Button spans full width */
-    }
-}
-
-/* Additional responsive tweaks for very small devices */
-@media (max-width: 400px) {
-    #chat-input {
+    #send-button {
+        padding: 8px 12px;
         font-size: 14px;
-        padding: 8px;
-    }
-
-    #chat-form button {
-        font-size: 14px;
-        padding: 8px;
     }
 }

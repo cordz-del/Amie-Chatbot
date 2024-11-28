@@ -1,66 +1,72 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from function import generate_response  # Import the function from function.py
+from function import generate_response  # Import function from function.py
 import logging
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # Enable Cross-Origin Resource Sharing
 
-# Configure logging
+# Configure logging for debugging
 logging.basicConfig(level=logging.DEBUG)
 
-# Global flag to simulate `before_first_request`
-first_request = True
-
-@app.before_request
-def initialize_on_first_request():
-    global first_request
-    if first_request:
-        logging.info("Initializing application on first request.")
-        first_request = False
-
-# Root route for status check
 @app.route('/')
 def home():
-    return "Welcome to the ChatBot API. Use /chat for interactions."
+    """
+    Root endpoint for the chatbot API.
+    """
+    return "Welcome to the ChatBot API! Use /chat for chatbot interactions."
 
-# Chat route for processing user input
 @app.route('/chat', methods=['POST'])
 def chat():
+    """
+    Endpoint for processing user input and generating chatbot responses.
+
+    Returns:
+        JSON response containing the chatbot reply, conversation log, and audio if applicable.
+    """
     try:
         # Log incoming request
         logging.debug("Received request: %s", request.json)
 
-        # Ensure the request contains JSON with the 'message' key
-        if request.json and 'message' in request.json:
-            user_input = request.json['message']
-            conversation_log = request.json.get('conversation_log', [])  # Retrieve or initialize conversation log
-            logging.debug("User input: %s", user_input)
+        # Extract data from request
+        if not request.json or 'message' not in request.json:
+            logging.error("Invalid request: Missing 'message' key.")
+            return jsonify({"error": "Invalid request, 'message' key not found."}), 400
 
-            # Generate response using the function from function.py
-            response, should_end = generate_response(user_input, conversation_log)
+        user_input = request.json['message']
+        conversation_log = request.json.get('conversation_log', [])
 
-            # Return the response as JSON
-            return jsonify({
-                'response': response,
-                'should_end': should_end,
-                'conversation_log': conversation_log
-            })
-        else:
-            logging.error("Invalid request body: %s", request.json)
-            return jsonify({'error': 'Invalid request, "message" key not found'}), 400
+        # Generate response using the imported function
+        response, should_end = generate_response(user_input, conversation_log)
 
+        # If `empathy9.py` includes audio processing, encode the TTS response
+        try:
+            from empathy9 import process_audio_response
+            audio_base64 = process_audio_response(response)  # Generate audio from the chatbot response
+        except ImportError as e:
+            logging.warning("TTS functionality not available. Skipping audio generation.")
+            audio_base64 = None
+
+        # Build the JSON response
+        return jsonify({
+            "response": response,
+            "should_end": should_end,
+            "conversation_log": conversation_log,
+            "audio": audio_base64  # Include audio in the response if available
+        })
     except Exception as e:
-        # Log unexpected errors
-        logging.error("Unexpected Error in /chat route: %s", e, exc_info=True)
-        return jsonify({'error': f'Unexpected Error: {str(e)}'}), 500
+        logging.error("An error occurred in /chat: %s", str(e), exc_info=True)
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-# Test route (optional, for debugging)
+# Test route to ensure the server is running
 @app.route('/test', methods=['GET'])
 def test_route():
-    return "This is a test route!"
+    """
+    Test endpoint for verifying the server is operational.
+    """
+    return "Test route is working fine!"
 
-# Main entry point for Flask
 if __name__ == '__main__':
+    # Run the application
     app.run(host='0.0.0.0', port=5000, debug=True)
