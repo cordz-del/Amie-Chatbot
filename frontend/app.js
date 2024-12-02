@@ -7,6 +7,7 @@ const chatHistory = document.getElementById("chat-history");
 const startRecordBtn = document.getElementById("start-record-btn");
 const stopRecordBtn = document.getElementById("stop-record-btn");
 const status = document.getElementById("status");
+const ageInput = document.getElementById("age-input");
 
 let recognition;
 
@@ -35,7 +36,7 @@ if (recognition) {
     const transcript = event.results[0][0].transcript.trim();
     status.textContent = `You said: ${transcript}`;
     if (transcript) {
-      await sendMessage(transcript);
+      await sendMessage(transcript, parseInt(ageInput.value, 10) || 10);
     } else {
       chatHistory.innerHTML += `<p><strong>Bot:</strong> No input detected. Please try again.</p>`;
     }
@@ -63,8 +64,9 @@ if (recognition) {
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault(); // Prevent form from reloading the page
   const message = chatInput.value.trim();
+  const age = parseInt(ageInput.value, 10) || 10; // Default to 10 if no age is provided
   if (message) {
-    await sendMessage(message);
+    await sendMessage(message, age);
     chatInput.value = ""; // Clear input field after sending
   } else {
     chatHistory.innerHTML += `<p><strong>Bot:</strong> Please enter a message.</p>`;
@@ -72,7 +74,7 @@ chatForm.addEventListener("submit", async (event) => {
 });
 
 // Function to send a message to the chatbot API
-async function sendMessage(message) {
+async function sendMessage(message, age) {
   // Display the user's message in the chat history
   chatHistory.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
 
@@ -82,13 +84,19 @@ async function sendMessage(message) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, age }), // Include age in the POST request body
     });
 
     const data = await response.json();
     if (data.response) {
       chatHistory.innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
-      speakText(data.response); // Use text-to-speech for the bot's response
+
+      // Removed browser's TTS to avoid default male voice
+      // speakText(data.response);
+
+      if (data.audio) {
+        playAudio(data.audio); // Play audio response if available
+      }
     } else if (data.error) {
       chatHistory.innerHTML += `<p><strong>Bot:</strong> Error: ${data.error}</p>`;
     } else {
@@ -103,12 +111,18 @@ async function sendMessage(message) {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-// Function to use browser's text-to-speech API
-function speakText(text) {
-  const synth = window.speechSynthesis;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.onerror = () => {
-    console.error("Error occurred during speech synthesis.");
-  };
-  synth.speak(utterance);
+// Function to play audio from base64-encoded data
+function playAudio(base64Audio) {
+  const audioData = Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0));
+  const audioBlob = new Blob([audioData], { type: "audio/wav" });
+  const audioUrl = URL.createObjectURL(audioBlob);
+  const audio = new Audio(audioUrl);
+  audio.play().catch((error) => {
+    console.error("Error playing audio:", error);
+  });
 }
+
+// Debugging helper: Log when the frontend loads
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Frontend loaded successfully.");
+});
