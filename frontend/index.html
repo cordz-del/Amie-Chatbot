@@ -3,16 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Replit Backend Chatbot</title>
+    <title>Amie Chatbot Project</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to the Chatbot</h1>
-    <div id="chat-history"></div>
-    <form id="chat-form">
-        <input type="text" id="chat-input" placeholder="Type your message here..." />
-        <button type="submit">Send</button>
-    </form>
+    <header>
+        <h1>Amie Project Chatbot</h1>
+    </header>
+
+    <main>
+        <!-- Chat History Section -->
+        <div id="chat-container">
+            <div id="chat-history"></div>
+        </div>
+
+        <!-- Input Section -->
+        <section id="input-container">
+            <form id="chat-form">
+                <input type="number" id="age-input" placeholder="Enter your age" min="3" max="18" required />
+                <input type="text" id="chat-input" placeholder="Type your message here..." autocomplete="off" />
+                <button type="submit">Send</button>
+            </form>
+        </section>
+
+        <!-- Voice Interaction Controls -->
+        <section id="voice-controls">
+            <button id="start-record-btn">Start Recording</button>
+            <button id="stop-record-btn" disabled>Stop Recording</button>
+            <p id="status"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Powered by the Amie Chatbot Project - AI for Social and Emotional Learning</p>
+    </footer>
+
     <script src="app.js"></script>
 </body>
 </html>
