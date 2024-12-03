@@ -12,6 +12,7 @@
     </header>
 
     <main>
+<<<<<<< HEAD
         <!-- Chat History Section -->
         <div id="chat-container">
             <div id="chat-history"></div>
@@ -45,12 +46,38 @@
 
         <!-- Hidden Audio Player -->
         <audio id="audio-player" controls hidden></audio>
+=======
+        <!-- Chat Container -->
+        <section id="chat-container">
+            <div id="chat-history"></div>
+            <div id="controls">
+                <button id="start-record-btn">Start Recording</button>
+                <button id="stop-record-btn" disabled>Stop Recording</button>
+                <p id="status"></p>
+            </div>
+        </section>
+        
+        <!-- Input Container -->
+        <section id="input-container">
+            <form id="chat-form">
+                <!-- Age Input -->
+                <input type="number" id="age-input" placeholder="Enter your age" min="3" max="18" required>
+                <!-- Chat Input -->
+                <input type="text" id="chat-input" placeholder="Enter your message" autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </section>
+        
+        <!-- Chat Response -->
+        <div id="chat-response"></div>
+>>>>>>> 1ab5159 (Save local changes before pulling)
     </main>
 
     <footer>
         <p>Powered by Amie Chatbot Project - AI for Social and Emotional Learning</p>
     </footer>
 
+<<<<<<< HEAD
     <script>
         const chatHistory = document.getElementById('chat-history');
         const chatInput = document.getElementById('chat-input');
@@ -136,5 +163,9 @@
             audioPlayer.volume = parseFloat(volumeControl.value);
         });
     </script>
+=======
+    <!-- JavaScript -->
+    <script src="/static/app.js"></script> <!-- Link to the external JavaScript file -->
+>>>>>>> 1ab5159 (Save local changes before pulling)
 </body>
 </html>
