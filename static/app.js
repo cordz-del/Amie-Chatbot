@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Define constants for API URL and select DOM elements
 const BACKEND_URL = "https://462d2d49-1f98-4257-a721-46da919d929b-00-3hhfbf6wdvr1l.kirk.replit.dev";
 
@@ -8,6 +9,17 @@ const startRecordBtn = document.getElementById("start-record-btn");
 const stopRecordBtn = document.getElementById("stop-record-btn");
 const status = document.getElementById("status");
 const ageInput = document.getElementById("age-input");
+=======
+// Select DOM elements
+const startRecordBtn = document.getElementById('start-record-btn');
+const stopRecordBtn = document.getElementById('stop-record-btn');
+const status = document.getElementById('status');
+const chatResponse = document.getElementById('chat-response');
+const chatHistory = document.getElementById('chat-history');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const ageInput = document.getElementById('age-input'); // Input for user age
+>>>>>>> 1ab5159 (Save local changes before pulling)
 
 let recognition;
 
@@ -32,6 +44,7 @@ if (recognition) {
     stopRecordBtn.disabled = false;
   };
 
+<<<<<<< HEAD
   recognition.onresult = async (event) => {
     const transcript = event.results[0][0].transcript.trim();
     status.textContent = `You said: ${transcript}`;
@@ -41,6 +54,18 @@ if (recognition) {
       chatHistory.innerHTML += `<p><strong>Bot:</strong> No input detected. Please try again.</p>`;
     }
   };
+=======
+    recognition.onresult = async (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        status.textContent = `You said: ${transcript}`;
+        if (transcript) {
+            const age = parseInt(ageInput.value) || 10; // Default age if not provided
+            await sendMessage(transcript, age);
+        } else {
+            chatResponse.textContent = "No input detected. Please try again.";
+        }
+    };
+>>>>>>> 1ab5159 (Save local changes before pulling)
 
   recognition.onerror = (event) => {
     status.textContent = `Error occurred: ${event.error}`;
@@ -61,6 +86,7 @@ if (recognition) {
 }
 
 // Handle form submission for text-based chat
+<<<<<<< HEAD
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault(); // Prevent form from reloading the page
   const message = chatInput.value.trim();
@@ -71,12 +97,35 @@ chatForm.addEventListener("submit", async (event) => {
   } else {
     chatHistory.innerHTML += `<p><strong>Bot:</strong> Please enter a message.</p>`;
   }
+=======
+chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevent form from reloading the page
+    const message = chatInput.value.trim();
+    const age = parseInt(ageInput.value) || 10; // Default age if not provided
+    if (message) {
+        await sendMessage(message, age);
+        chatInput.value = ''; // Clear input field after sending
+    } else {
+        chatResponse.textContent = "Please enter a message.";
+    }
+>>>>>>> 1ab5159 (Save local changes before pulling)
 });
 
 // Function to send a message to the chatbot API
 async function sendMessage(message, age) {
+<<<<<<< HEAD
   // Display the user's message in the chat history
   chatHistory.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+=======
+    try {
+        const response = await fetch('https://your-replit-backend-url/chat', { // Update with your actual Replit backend URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message, age }) // Include age here
+        });
+>>>>>>> 1ab5159 (Save local changes before pulling)
 
   try {
     const response = await fetch(`${BACKEND_URL}/chat`, {
