@@ -1,116 +1,109 @@
-import openai
 import os
-from typing import Tuple, List, Dict
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from empathy9 import process_audio_response, process_empathy  # Import necessary functions
+import openai
 
-# Set your OpenAI API Key
+# Set up OpenAI API key from environment variables
 openai.api_key = os.getenv("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("OPENAI_API_KEY environment variable is not set.")
 
-# Categorized prompts for dynamic and engaging interaction
-EMPATHY_PROMPTS = [
-    "How do you think your friend felt during [specific situation]?",
-    "What would you say to make someone feel better if they were having a tough day?",
-    "Can you think of a time when you felt like someone really understood you?",
-]
+# Initialize Flask app
+app = Flask(__name__)
+CORS(app)
 
-CONFLICT_RESOLUTION_PROMPTS = [
-    "When we disagree with a friend, what could we say to stay calm and solve the problem together?",
-    "How could you let someone know how you feel without hurting their feelings?",
-    "What’s one nice thing you could say to help someone feel better in an argument?",
-]
-
-GENERAL_PROMPTS = [
-    "Tell me more about how you're feeling right now.",
-    "What do you enjoy doing in your free time?",
-    "How can I help you today?",
-]
-
-ALL_PROMPTS = EMPATHY_PROMPTS + CONFLICT_RESOLUTION_PROMPTS + GENERAL_PROMPTS
-
-# Quit keywords
-QUIT_KEYWORDS = ["quit", "goodbye", "exit", "bye"]
-
-def is_quit_command(user_input: str) -> bool:
+@app.route('/chat', methods=['POST'])
+def chat():
     """
-    Check if the user input contains a quit command.
-
-    Args:
-        user_input (str): The user's input message.
-
-    Returns:
-        bool: True if quit command is found, False otherwise.
+    Endpoint for handling text-based chat requests.
     """
-    for quit_word in QUIT_KEYWORDS:
-        if quit_word in user_input.lower():
-            return True
-    return False
-
-# Function to dynamically select a prompt
-def select_prompt(conversation_log: List[Dict[str, str]]) -> str:
-    """
-    Select a prompt dynamically based on conversation history.
-
-    Args:
-        conversation_log (list): A list of previous conversation turns.
-
-    Returns:
-        str: A dynamically chosen prompt.
-    """
-    if len(conversation_log) < len(ALL_PROMPTS):
-        return ALL_PROMPTS[len(conversation_log)]
-    return "What else would you like to share?"
-
-# Function to generate chatbot response
-def generate_response(user_input: str, conversation_log: List[Dict[str, str]]) -> Tuple[str, bool]:
-    """
-    Generate a response based on user input and conversation history.
-
-    Args:
-        user_input (str): The user's input message.
-        conversation_log (list): A list of previous conversation turns.
-
-    Returns:
-        tuple[str, bool]: The generated chatbot response and a flag indicating if the conversation should end.
-    """
-    # Check for quit commands
-    if is_quit_command(user_input):
-        return "Goodbye! It was nice talking to you!", True
-
-    # Select an appropriate prompt based on conversation context
-    prompt = select_prompt(conversation_log)
-
     try:
-        # Use OpenAI's ChatCompletion to generate a response
+        data = request.get_json()
+        if not data or "message" not in data or "age" not in data:
+            return jsonify({"error": "Invalid input. Both 'message' and 'age' are required."}), 400
+
+        user_input = data["message"]
+        age = data["age"]
+
+        # Call OpenAI API for response
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful and empathetic assistant."},
-                *conversation_log,
-                {"role": "user", "content": user_input},
-                {"role": "assistant", "content": prompt}
+                {"role": "system", "content": "You are a helpful and empathetic assistant specializing in social and emotional learning."},
+                {"role": "user", "content": user_input}
             ],
             max_tokens=150,
         )
+        chatbot_response = response['choices'][0]['message']['content'].strip()
 
-        # Extract and validate the response structure
-        if "choices" in response and len(response['choices']) > 0:
-            chatbot_response = response['choices'][0].get('message', {}).get('content', "").strip()
-        else:
-            return "Error: Invalid API response structure.", False
+        # Generate audio response
+        audio_base64 = process_audio_response(chatbot_response, age)
 
-        # Add the new conversation turn to the log
-        conversation_log.append({"user": user_input, "assistant": chatbot_response})
-        return chatbot_response, False
-
-    except openai.error.OpenAIError as e:
-        # Handle OpenAI-specific errors
-        error_message = f"OpenAI API error: {str(e)}"
-        print(error_message)
-        return error_message, False
+        return jsonify({
+            "response": chatbot_response,
+            "audio": audio_base64
+        }), 200
 
     except Exception as e:
-        # Handle other exceptions such as network issues
-        error_message = f"An unexpected error occurred: {str(e)}"
-        print(error_message)
-        return error_message, False
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/voice', methods=['POST'])
+def voice():
+    """
+    Endpoint for handling voice-based chat requests.
+    """
+    try:
+        data = request.get_json()
+        if not data or "audio" not in data or "age" not in data:
+            return jsonify({"error": "Invalid input. Both 'audio' and 'age' are required."}), 400
+
+        audio_file = data["audio"]
+        age = data["age"]
+
+        # Process voice data (e.g., transcribe audio to text)
+        from empathy9 import recognizer
+        with open(audio_file, "rb") as source:
+            audio = recognizer.record(source)
+        user_input = recognizer.recognize_google(audio)
+
+        # Generate chatbot response
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful and empathetic assistant specializing in social and emotional learning."},
+                {"role": "user", "content": user_input}
+            ],
+            max_tokens=150,
+        )
+        chatbot_response = response['choices'][0]['message']['content'].strip()
+
+        # Generate audio response
+        audio_base64 = process_audio_response(chatbot_response, age)
+
+        return jsonify({
+            "response": chatbot_response,
+            "audio": audio_base64,
+            "user_input": user_input
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/test', methods=['GET'])
+def test():
+    """
+    Endpoint for testing the server is operational.
+    """
+    return "Test route is working!", 200
+
+
+if __name__ == "__main__":
+    # Retrieve host and port from environment variables
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 5000))
+
+    # Run the Flask development server for local testing
+    app.run(host=host, port=port, debug=True)
