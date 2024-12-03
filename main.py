@@ -1,72 +1,109 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from function import generate_response  # Import function from function.py
-import logging
+from empathy9 import process_audio_response, process_empathy  # Import necessary functions
+import openai
+
+# Set up OpenAI API key from environment variables
+openai.api_key = os.getenv("OPENAI_API_KEY")
+if not openai.api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set.")
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
-
-# Configure logging for debugging
-logging.basicConfig(level=logging.DEBUG)
-
-@app.route('/')
-def home():
-    """
-    Root endpoint for the chatbot API.
-    """
-    return "Welcome to the ChatBot API! Use /chat for chatbot interactions."
+CORS(app)
 
 @app.route('/chat', methods=['POST'])
 def chat():
     """
-    Endpoint for processing user input and generating chatbot responses.
-
-    Returns:
-        JSON response containing the chatbot reply, conversation log, and audio if applicable.
+    Endpoint for handling text-based chat requests.
     """
     try:
-        # Log incoming request
-        logging.debug("Received request: %s", request.json)
+        data = request.get_json()
+        if not data or "message" not in data or "age" not in data:
+            return jsonify({"error": "Invalid input. Both 'message' and 'age' are required."}), 400
 
-        # Extract data from request
-        if not request.json or 'message' not in request.json:
-            logging.error("Invalid request: Missing 'message' key.")
-            return jsonify({"error": "Invalid request, 'message' key not found."}), 400
+        user_input = data["message"]
+        age = data["age"]
 
-        user_input = request.json['message']
-        conversation_log = request.json.get('conversation_log', [])
+        # Call OpenAI API for response
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful and empathetic assistant specializing in social and emotional learning."},
+                {"role": "user", "content": user_input}
+            ],
+            max_tokens=150,
+        )
+        chatbot_response = response['choices'][0]['message']['content'].strip()
 
-        # Generate response using the imported function
-        response, should_end = generate_response(user_input, conversation_log)
+        # Generate audio response
+        audio_base64 = process_audio_response(chatbot_response, age)
 
-        # If `empathy9.py` includes audio processing, encode the TTS response
-        try:
-            from empathy9 import process_audio_response
-            audio_base64 = process_audio_response(response)  # Generate audio from the chatbot response
-        except ImportError as e:
-            logging.warning("TTS functionality not available. Skipping audio generation.")
-            audio_base64 = None
-
-        # Build the JSON response
         return jsonify({
-            "response": response,
-            "should_end": should_end,
-            "conversation_log": conversation_log,
-            "audio": audio_base64  # Include audio in the response if available
-        })
+            "response": chatbot_response,
+            "audio": audio_base64
+        }), 200
+
     except Exception as e:
-        logging.error("An error occurred in /chat: %s", str(e), exc_info=True)
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-# Test route to ensure the server is running
+
+@app.route('/voice', methods=['POST'])
+def voice():
+    """
+    Endpoint for handling voice-based chat requests.
+    """
+    try:
+        data = request.get_json()
+        if not data or "audio" not in data or "age" not in data:
+            return jsonify({"error": "Invalid input. Both 'audio' and 'age' are required."}), 400
+
+        audio_file = data["audio"]
+        age = data["age"]
+
+        # Process voice data (e.g., transcribe audio to text)
+        from empathy9 import recognizer
+        with open(audio_file, "rb") as source:
+            audio = recognizer.record(source)
+        user_input = recognizer.recognize_google(audio)
+
+        # Generate chatbot response
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful and empathetic assistant specializing in social and emotional learning."},
+                {"role": "user", "content": user_input}
+            ],
+            max_tokens=150,
+        )
+        chatbot_response = response['choices'][0]['message']['content'].strip()
+
+        # Generate audio response
+        audio_base64 = process_audio_response(chatbot_response, age)
+
+        return jsonify({
+            "response": chatbot_response,
+            "audio": audio_base64,
+            "user_input": user_input
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/test', methods=['GET'])
-def test_route():
+def test():
     """
-    Test endpoint for verifying the server is operational.
+    Endpoint for testing the server is operational.
     """
-    return "Test route is working fine!"
+    return "Test route is working!", 200
 
-if __name__ == '__main__':
-    # Run the application
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+if __name__ == "__main__":
+    # Retrieve host and port from environment variables
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 5000))
+
+    # Run the Flask development server for local testing
+    app.run(host=host, port=port, debug=True)
